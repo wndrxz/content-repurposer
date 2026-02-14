@@ -34,6 +34,19 @@ const PLATFORMS = [
   },
 ];
 
+interface EmailData {
+  subject: string;
+  body: string;
+}
+
+interface ResultData {
+  twitter?: string[];
+  linkedin?: string;
+  instagram?: string;
+  tiktok?: string;
+  email?: EmailData;
+}
+
 export default function Home() {
   const [content, setContent] = useState("");
   const [platforms, setPlatforms] = useState([
@@ -42,7 +55,7 @@ export default function Home() {
     "instagram",
   ]);
   const [language, setLanguage] = useState("english");
-  const [result, setResult] = useState<Record<string, any> | null>(null);
+  const [result, setResult] = useState<ResultData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
@@ -75,7 +88,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.error) setError(data.error);
-      else setResult(data.data);
+      else setResult(data.data as ResultData);
     } catch {
       setError("Server error. Try again.");
     }
@@ -177,36 +190,34 @@ export default function Home() {
             <h2 className="text-2xl font-bold">📱 Your content:</h2>
 
             {/* Twitter */}
-            {result.twitter && Array.isArray(result.twitter) && (
+            {result.twitter && result.twitter.length > 0 && (
               <div className="bg-[#111118] border border-[#1e1e2e] rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-lg">𝕏</span>
                   <span className="font-bold">Twitter / X</span>
                   <span className="text-xs text-gray-500">
-                    ({(result.twitter as string[]).length} tweets)
+                    ({result.twitter.length} tweets)
                   </span>
                 </div>
                 <div className="space-y-3">
-                  {(result.twitter as string[]).map(
-                    (tweet: string, i: number) => (
-                      <div key={i} className="bg-[#0a0a0f] rounded-xl p-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <p className="text-sm leading-relaxed flex-1">
-                            {tweet}
-                          </p>
-                          <button
-                            onClick={() => copyText(tweet, `tw-${i}`)}
-                            className="px-2 py-1 text-xs bg-[#1a1a2e] rounded-lg cursor-pointer hover:bg-[#222] flex-shrink-0"
-                          >
-                            {copied === `tw-${i}` ? "✅" : "📋"}
-                          </button>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-2">
-                          {tweet.length}/280
-                        </div>
+                  {result.twitter.map((tweet: string, i: number) => (
+                    <div key={i} className="bg-[#0a0a0f] rounded-xl p-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <p className="text-sm leading-relaxed flex-1">
+                          {tweet}
+                        </p>
+                        <button
+                          onClick={() => copyText(tweet, `tw-${i}`)}
+                          className="px-2 py-1 text-xs bg-[#1a1a2e] rounded-lg cursor-pointer hover:bg-[#222] flex-shrink-0"
+                        >
+                          {copied === `tw-${i}` ? "✅" : "📋"}
+                        </button>
                       </div>
-                    ),
-                  )}
+                      <div className="text-xs text-gray-600 mt-2">
+                        {tweet.length}/280
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -222,14 +233,14 @@ export default function Home() {
                     <span className="font-bold">LinkedIn</span>
                   </div>
                   <button
-                    onClick={() => copyText(result.linkedin as string, "li")}
+                    onClick={() => copyText(result.linkedin!, "li")}
                     className="px-3 py-1 text-xs bg-[#1a1a2e] rounded-lg cursor-pointer hover:bg-[#222]"
                   >
                     {copied === "li" ? "✅ Copied!" : "📋 Copy"}
                   </button>
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-300">
-                  {result.linkedin as string}
+                  {result.linkedin}
                 </p>
               </div>
             )}
@@ -243,14 +254,14 @@ export default function Home() {
                     <span className="font-bold">Instagram</span>
                   </div>
                   <button
-                    onClick={() => copyText(result.instagram as string, "ig")}
+                    onClick={() => copyText(result.instagram!, "ig")}
                     className="px-3 py-1 text-xs bg-[#1a1a2e] rounded-lg cursor-pointer hover:bg-[#222]"
                   >
                     {copied === "ig" ? "✅ Copied!" : "📋 Copy"}
                   </button>
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-300">
-                  {result.instagram as string}
+                  {result.instagram}
                 </p>
               </div>
             )}
@@ -264,20 +275,20 @@ export default function Home() {
                     <span className="font-bold">TikTok Script</span>
                   </div>
                   <button
-                    onClick={() => copyText(result.tiktok as string, "tt")}
+                    onClick={() => copyText(result.tiktok!, "tt")}
                     className="px-3 py-1 text-xs bg-[#1a1a2e] rounded-lg cursor-pointer hover:bg-[#222]"
                   >
                     {copied === "tt" ? "✅ Copied!" : "📋 Copy"}
                   </button>
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-300">
-                  {result.tiktok as string}
+                  {result.tiktok}
                 </p>
               </div>
             )}
 
             {/* Email */}
-            {result.email && typeof result.email === "object" && (
+            {result.email && result.email.subject && (
               <div className="bg-[#111118] border border-[#1e1e2e] rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -287,7 +298,7 @@ export default function Home() {
                   <button
                     onClick={() =>
                       copyText(
-                        `Subject: ${(result.email as { subject: string; body: string }).subject}\n\n${(result.email as { subject: string; body: string }).body}`,
+                        `Subject: ${result.email!.subject}\n\n${result.email!.body}`,
                         "em",
                       )
                     }
@@ -299,14 +310,11 @@ export default function Home() {
                 <div className="bg-[#0a0a0f] rounded-xl p-3 mb-2">
                   <span className="text-xs text-gray-500">Subject: </span>
                   <span className="text-sm font-semibold">
-                    {
-                      (result.email as { subject: string; body: string })
-                        .subject
-                    }
+                    {result.email.subject}
                   </span>
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-300">
-                  {(result.email as { subject: string; body: string }).body}
+                  {result.email.body}
                 </p>
               </div>
             )}

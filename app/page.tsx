@@ -42,7 +42,7 @@ export default function Home() {
     "instagram",
   ]);
   const [language, setLanguage] = useState("english");
-  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [result, setResult] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
